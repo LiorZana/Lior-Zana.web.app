@@ -9,18 +9,18 @@ const Theme = createMuiTheme({
             main: '#45A9BF'
         },
         secondary: {
-            main: '#F6334A'
+            main: '#542B72'
         },
         teriary: {
-            main: '#F2DB94',
-            light: '#ffffc5',
-            dark: '#beaa65',
+            main: '#8eedcb',
+            light: '#c1fffe',
+            dark: '#5cba9a',
             contrastText: '#000000'
         },
         quaternary: {
-            main: '#F25252',
-            light: '#ff857e',
-            dark: '#b91529',
+            main: '#F2DB94',
+            light: '#ff9285',
+            dark: '#bc2c2e',
             contrastText: '#000000'
         }
 

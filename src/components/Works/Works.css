@@ -1,0 +1,29 @@
+.popup {
+    transition: all 1s;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.popup-enter {
+    transition: all 1s;
+    pointer-events: auto;
+    opacity: 0;
+}
+
+.popup-enter-active {
+    transition: all 1s;
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.popup-exit {
+    transition: all 1s;
+    pointer-events: none;
+    opacity: 1;
+}
+
+.popup-exit-active {
+    transition: all 1s;
+    pointer-events: none;
+    opacity: 0;
+}

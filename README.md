@@ -1,2 +1,3 @@
 # LiorZana.github.io
-My portfolio website
+
+Welcome to the repo behind my Portfolio website. Enjoy!

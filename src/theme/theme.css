@@ -1,10 +1,12 @@
 @font-face {
     font-family: 'Pier-Sans';
     src:  url('../font/PierSans-Regular.otf') format('woff');
+    font-display: fallback;
   }
 
   @font-face {
     font-family: 'Pier-Sans';
     font-weight: bold;
     src:  url('../font/PierSans-Bold.otf') format('woff');
+    font-display: fallback;
   }

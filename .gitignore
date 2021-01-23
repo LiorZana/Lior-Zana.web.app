@@ -21,3 +21,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+/old_files
+
+# firebase
+.firebaserc
+firebase.json
+.firebase
+.github
