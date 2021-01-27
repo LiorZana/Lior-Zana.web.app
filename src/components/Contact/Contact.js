@@ -1,11 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { FormControl } from '@material-ui/core';
-import { TextField } from '@material-ui/core';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Input from '@material-ui/core/Input';
-import { CSSTransition } from 'react-transition-group';
+import { FormControl, TextField, Typography, IconButton, Input, Box, CircularProgress } from '@material-ui/core';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { Waypoint } from 'react-waypoint';
 import { socialNetIcons } from '../../utils/iconImports.js';
 import { opacityTransition, growTransition } from '../../utils/transitions';
@@ -64,6 +60,7 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'center',
         backgroundColor: theme.palette.primary.light,
         minHeight: '100vh',
+        minWidth: '50%',
         padding: '0 5rem',
         zIndex: 1,
         [theme.breakpoints.down('650')]: {
@@ -109,6 +106,13 @@ const useStyles = makeStyles((theme) => ({
         backgroundImage: background,
         backgroundSize: 'cover',
         zIndex: 0,
+    },
+    response: {
+        paddingTop: '1rem',
+        fontSize: '1.4rem',
+        [theme.breakpoints.down('400')]: {
+            fontSize: '1.2rem'
+        }
     }
 }))
 
@@ -119,17 +123,25 @@ const contactMethods = [
     { icon: socialNetIcons.facebook, address: 'https://www.facebook.com/Lior.Y.Zana/', name: 'Facebook' },
 ]
 
+const currentPopInTransition = opacityTransition(1000);
+const {
+    defaultStyle: defaultPopInStyle,
+    transitionStyles: popInTransitionStyles
+} = currentPopInTransition;
 
-const defaultPopInStyle = opacityTransition(1000).defaultStyle;
-const popInTransitionStyles = opacityTransition(1000).transitionStyles;
-
-const defaultExtendStyle = growTransition(500).defaultStyle;
-const extendTransitionStyles = growTransition(500).transitionStyles;
+const currentGrowTransition = growTransition(500);
+const {
+    defaultStyle: defaultGrowStyle,
+    transitionStyles: growTransitionStyles
+} = currentGrowTransition;
 
 
 const Contact = () => {
     const classes = useStyles();
-    const [isIn, setIsIn] = React.useState(false);
+    const [isIn, setIsIn] = useState(false);
+    const [isLoading, setLoading] = useState(false);
+    const [didSubmit, setDidSubmit] = useState(false);
+    const [didError, setDidError] = useState(false);
 
 
     const submitForm = (e) => {
@@ -138,9 +150,11 @@ const Contact = () => {
         const message = e.target['message'].value;
         emailjs.send('service_ao6uphf', 'template_cadr2p4', { from_name: name, to_name: 'Lior', from_email: email, message: message })
             .then((result) => {
-                console.log(result.text);
+                setLoading(false);
+                setDidSubmit(true);
             }, (error) => {
-                console.log(error.text);
+                setLoading(false);
+                setDidError(true);
             });
     }
 
@@ -148,6 +162,9 @@ const Contact = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault(e);
+        if (!isLoading) {
+            setLoading(true);
+        }
         debounceForm(e);
     }
 
@@ -157,24 +174,64 @@ const Contact = () => {
             <Waypoint bottomOffset={'50%'} onEnter={() => setIsIn(true)} onLeave={({ currentPosition }) => currentPosition === 'below' ? setIsIn(false) : false} ><span style={{ position: 'absolute', top: 0 }} /></Waypoint>
             <CSSTransition in={isIn} appear timeout={100}>
                 {state =>
-                    <div className={classes.content} style={{ ...defaultExtendStyle, ...extendTransitionStyles[state] }}>
+                    <div className={classes.content} style={{ ...defaultGrowStyle, ...growTransitionStyles[state] }}>
+
                         <CSSTransition in={isIn} timeout={{ enter: 1500, exit: 100 }}>
                             {state =>
                                 <FormControl role='form' style={{ ...defaultPopInStyle, ...popInTransitionStyles[state] }}>
-                                    <form method='post' onSubmit={handleSubmit} style={{ height: '100%' }}>
-                                        <fieldset className={classes.fieldset}>
+                                    <form method='post' onSubmit={handleSubmit} style={{ height: '100%', width: '100%' }}>
+                                        <fieldset className={classes.fieldset} style={{ minWidth: '100%' }}>
                                             <legend><Typography style={{ padding: '0 0.5em' }}>Send me a message:</Typography></legend>
-                                            <div className={classes.inputs}>
-                                                <TextField role='input' aria-required='true' aria-label='Name input' required label='Name' id='name' type='text' name='name' inputProps={{ className: classes.inputText }} InputLabelProps={{ classes: { root: classes.input } }} />
-                                                <TextField role='input' aria-required='true' aria-label='E-mail input' required label='Email' id='email' type='email' name='email' inputProps={{ className: classes.inputText }} InputLabelProps={{ className: classes.input }} />
-                                            </div>
-                                            <TextField role='input' aria-required='true' aria-label='Message input' style={{ padding: '0 1rem', }} required fullWidth label='Message' id='message' type='text' name='message' multiline rows={4} inputProps={{ className: classes.inputText }} InputLabelProps={{ className: classes.input, style: { paddingLeft: '1rem' } }} />
-                                            <Input role='button' aria-label='Submit form' style={{ color: 'white', marginTop: '0.5rem' }} type='submit' value='Send'>Hello</Input>
+                                            <CSSTransition in={isLoading} timeout={100}>
+                                                {state =>
+                                                    <Box position='absolute' display='flex' top={0} left={0} justifyContent='center' alignItems='center' minWidth='100%' minHeight='100%' style={{ ...defaultPopInStyle, ...popInTransitionStyles[state] }}>
+                                                        <CircularProgress variant='indeterminate' color='secondary' />
+                                                    </Box>
+                                                }
+                                            </CSSTransition>
+                                            <CSSTransition in={didSubmit} timeout={100}>
+                                                {state =>
+                                                    <Box position='absolute' display='flex' top={0} left={0} justifyContent='center' alignItems='center' minWidth='100%' minHeight='100%' style={{ ...defaultPopInStyle, ...popInTransitionStyles[state] }}>
+                                                        <Typography className={classes.response} variant='h5' color='secondary'>
+                                                            Thank you!<br />
+                                                            Your message was sent successfully.<br />
+                                                            I will respond as soon as possible.
+                                                                                                </Typography>
+                                                    </Box>
+                                                }
+                                            </CSSTransition>
+                                            <CSSTransition in={didError} timeout={100}>
+                                                {state =>
+                                                    <Box position='absolute' display='flex' top={0} left={0} justifyContent='center' alignItems='center' minWidth='100%' minHeight='100%' style={{ ...defaultPopInStyle, ...popInTransitionStyles[state] }}>
+                                                        <Typography className={classes.response} variant='h5' color='secondary'>
+                                                            There seems to be an error!<br />
+                                                            Your message was not sent.<br />
+                                                            I will fix this as soon as possible.<br />
+                                                            You are welcome to use one of the <br/>other ways to contact me listed below.
+                                                                                                </Typography>
+                                                    </Box>
+                                                }
+                                            </CSSTransition>
+                                            <CSSTransition in={!didSubmit && !isLoading && !didError} timeout={100}>
+                                                {state =>
+                                                    <Box display='inherit' flexDirection='inherit' justifyContent='inherit' alignItems='inherit' style={{ ...defaultPopInStyle, ...popInTransitionStyles[state] }}>
+                                                        <div className={classes.inputs}>
+                                                            <TextField role='input' aria-required='true' aria-label='Name input' required label='Name' id='name' type='text' name='name' inputProps={{ className: classes.inputText }} InputLabelProps={{ classes: { root: classes.input } }} />
+                                                            <TextField role='input' aria-required='true' aria-label='E-mail input' required label='Email' id='email' type='email' name='email' inputProps={{ className: classes.inputText }} InputLabelProps={{ className: classes.input }} />
+                                                        </div>
+                                                        <TextField role='input' aria-required='true' aria-label='Message input' style={{ padding: '0 1rem', }} required fullWidth label='Message' id='message' type='text' name='message' multiline rows={4} inputProps={{ className: classes.inputText }} InputLabelProps={{ className: classes.input, style: { paddingLeft: '1rem' } }} />
+                                                        <Input role='button' aria-label='Submit form' style={{ color: 'white', marginTop: '0.5rem' }} type='submit' value='Send'>Hello</Input>
+                                                    </Box>
+                                                }
+                                            </CSSTransition>
+
                                         </fieldset>
                                     </form>
                                 </FormControl>
                             }
                         </CSSTransition>
+
+
                         <div className={classes.contactMethods}>
                             <CSSTransition in={isIn} timeout={{ enter: 1400, exit: 100 }}>
                                 {state =>
@@ -210,7 +267,7 @@ const Contact = () => {
             </CSSTransition>
 
 
-        </div>
+        </div >
     )
 }
 
