@@ -1,9 +1,10 @@
 
 export const opacityTransition = (duration = 1000) => ({
     defaultStyle: {
-        transition: `opacity ${duration}ms`,
+        transitionProperty: 'opacity',
+        transitionDuration: `${duration}ms`,
         opacity: 0,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
     },
     transitionStyles: {
         entering: { opacity: 0, pointerEvents: 'none' },

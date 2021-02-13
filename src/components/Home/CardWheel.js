@@ -28,12 +28,8 @@ const useStyles = makeStyles((theme) => ({
         maxWidth: '100vw',
         paddingTop: '3rem',
         top: 0,
-        transition: 'all 1s ease-out',
         display: 'flex',
         justifyContent: 'center',
-        perspective: '3000px',
-        pointerEvents: 'none',
-        transformOrigin: 'top'
     },
     container: {
         position: 'relative',
@@ -55,8 +51,6 @@ const useStyles = makeStyles((theme) => ({
             margin: 0
         },
     },
-    buttonLabel: {
-    }
 }))
 
 const currentOpacityTransition = opacityTransition(1000);
@@ -83,13 +77,36 @@ const CardWheel = ({ children, isIn = true, childProps = {} }) => {
     const former = selected === 0 ? children.length - 1 : selected - 1;
     const next = selected === children.length - 1 ? 0 : selected + 1;
 
+    const defaultChildStyle = {
+        transitionProperty: 'transform, z-index, pointer-events',
+        transitionDuration: '1s',
+        perspective: '3000px',
+        transformStyle: 'preserve-3d',
+        transform: 'translate3d(0,0,0)',
+        pointerEvents: 'none',
+        transformOrigin: 'top',
+    }
+
+    const childOutStyle = (i) => ({
+        transform: `translate3d(${i === former ? 30 : i === next ? -30 : 0}vw, 5vh, ${(i !== selected) ? -1000 : 0}px) scale(0.3, 0.3)`,
+        zIndex: 0,
+        pointerEvents: 'none',
+    })
+
+    const childInStyle = {
+        transform: 'translate3d(0, 0, 0) scale(1, 1)',
+        zIndex: 1,
+        pointerEvents: 'auto'
+    }
 
     const childTransitionStyles = (i) => ({
-        entering: { transform: `translate3d(${i === former ? 30 : i === next ? -30 : 0}vw, 5vh, ${(i !== selected) ? 0 : 1000}px) scale(0.3, 0.3)`, zIndex: 0, filter: 'blur(3px)', pointerEvents: 'none' },
-        entered: { transform: 'translate3d(0, 0, 0) scale(1, 1)', zIndex: 1, filter: 'blur(0)', pointerEvents: 'auto' },
-        exiting: { transform: 'translate3d(0, 0, 0) scale(1, 1)', zIndex: 1, filter: 'blur(0)', pointerEvents: 'auto' },
-        exited: { transform: `translate3d(${i === former ? -30 : i === next ? 30 : 0}vw, 5vh, ${(i !== selected) ? 0 : 1000}px) scale(0.3, 0.3)`, zIndex: 0, filter: 'blur(3px)', pointerEvents: 'none' }
+        entering: childOutStyle(i),
+        entered: childInStyle,
+        exiting: childInStyle,
+        exited: childOutStyle(i)
     })
+
+    const getChildStyles = (state, i) => ({ ...defaultChildStyle, ...childTransitionStyles(i)[state] })
 
     const getTimeout = (i, initialValue) => {
         return i === former ? initialValue
@@ -108,7 +125,7 @@ const CardWheel = ({ children, isIn = true, childProps = {} }) => {
             {children.map((Child, i) => {
                 return <CSSTransition in={i === selected} key={i} timeout={100}>
                     {state =>
-                        <div className={classes.child} ref={(ref) => getCurrentRef(ref, i)} style={{ ...childTransitionStyles(i)[state] }}>
+                        <div className={classes.child} ref={(ref) => getCurrentRef(ref, i)} style={getChildStyles(state, i)}>
                             <CSSTransition in={isIn} timeout={getTimeout(i, 100)}>
                                 {state =>
                                     <div className={classes.container} role='list' style={{ ...defaultOpacityStyle, ...opacityTransitionStyles[state] }}>
